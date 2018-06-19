@@ -2,6 +2,7 @@ package therealfarfetchd.math
 
 import kotlin.math.tan
 
+@Suppress("RedundantCompanionReference")
 data class Mat4(
   val c00: Float, val c01: Float, val c02: Float, val c03: Float,
   val c10: Float, val c11: Float, val c12: Float, val c13: Float,
@@ -33,13 +34,13 @@ data class Mat4(
     )
   }
 
-  fun translate(x: Float, y: Float, z: Float) = this * translateMat(x, y, z)
+  fun translate(x: Float, y: Float, z: Float) = this * Companion.translate(x, y, z)
 
-  fun translate(xyz: Vec3) = this * translateMat(xyz)
+  fun translate(xyz: Vec3) = this * Companion.translate(xyz)
 
-  fun scale(x: Float, y: Float, z: Float) = this * scaleMat(x, y, z)
+  fun scale(x: Float, y: Float, z: Float) = this * Companion.scale(x, y, z)
 
-  fun rotate(x: Float, y: Float, z: Float, angle: Float) = this * rotationMat(x, y, z, angle)
+  fun rotate(x: Float, y: Float, z: Float, angle: Float) = this * Companion.rotate(x, y, z, angle)
 
   companion object {
     @JvmStatic
@@ -50,23 +51,23 @@ data class Mat4(
       0f, 0f, 0f, 1f
     )
 
-    fun translateMat(x: Float, y: Float, z: Float) = Mat4(
+    fun translate(x: Float, y: Float, z: Float) = Mat4(
       1f, 0f, 0f, x,
       0f, 1f, 0f, y,
       0f, 0f, 1f, z,
       0f, 0f, 0f, 1f
     )
 
-    fun translateMat(xyz: Vec3) = translateMat(xyz.x, xyz.y, xyz.z)
+    fun translate(xyz: Vec3) = translate(xyz.x, xyz.y, xyz.z)
 
-    fun scaleMat(x: Float, y: Float, z: Float) = Mat4(
+    fun scale(x: Float, y: Float, z: Float) = Mat4(
       x, 0f, 0f, 0f,
       0f, y, 0f, 0f,
       0f, 0f, z, 0f,
       0f, 0f, 0f, 1f
     )
 
-    fun rotationMat(x: Float, y: Float, z: Float, angle: Float): Mat4 {
+    fun rotate(x: Float, y: Float, z: Float, angle: Float): Mat4 {
       val c = cosd(-angle)
       val s = sind(-angle)
       val t = 1 - c
