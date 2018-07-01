@@ -24,6 +24,8 @@ data class Vec2(val x: Float, val y: Float) {
 
   fun components() = listOf(x, y)
 
+  fun toVec2i() = Vec2i(x.toInt(), y.toInt())
+
   companion object {
     val Origin = Vec2(0, 0)
   }

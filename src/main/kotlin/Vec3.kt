@@ -38,6 +38,8 @@ data class Vec3(val x: Float, val y: Float, val z: Float) {
 
   fun toVec4() = Vec4(x, y, z, 1f)
 
+  fun toVec3i() = Vec3i(x.toInt(), y.toInt(), z.toInt())
+
   companion object {
     val Origin = Vec3(0, 0, 0)
   }

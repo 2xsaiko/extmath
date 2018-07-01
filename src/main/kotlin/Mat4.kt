@@ -38,9 +38,34 @@ data class Mat4(
 
   fun translate(xyz: Vec3) = this * Companion.translate(xyz)
 
+  fun translate(xyz: Vec3i) = this * Companion.translate(xyz)
+
   fun scale(x: Float, y: Float, z: Float) = this * Companion.scale(x, y, z)
 
   fun rotate(x: Float, y: Float, z: Float, angle: Float) = this * Companion.rotate(x, y, z, angle)
+
+  operator fun plus(other: Mat4) = Mat4(
+    c00 + other.c00, c01 + other.c01, c02 + other.c02, c03 + other.c03,
+    c10 + other.c10, c11 + other.c11, c12 + other.c12, c13 + other.c13,
+    c20 + other.c20, c21 + other.c21, c22 + other.c22, c23 + other.c23,
+    c30 + other.c30, c31 + other.c31, c32 + other.c32, c33 + other.c33
+  )
+
+  operator fun times(other: Mat4) = Mat4(
+    r0 dotProduct other.c0, r0 dotProduct other.c1, r0 dotProduct other.c2, r0 dotProduct other.c3,
+    r1 dotProduct other.c0, r1 dotProduct other.c1, r1 dotProduct other.c2, r1 dotProduct other.c3,
+    r2 dotProduct other.c0, r2 dotProduct other.c1, r2 dotProduct other.c2, r2 dotProduct other.c3,
+    r3 dotProduct other.c0, r3 dotProduct other.c1, r3 dotProduct other.c2, r3 dotProduct other.c3
+  )
+
+  operator fun times(other: Vec4) =
+    Vec4(r0 dotProduct other, r1 dotProduct other, r2 dotProduct other, r3 dotProduct other)
+
+  operator fun times(other: Vec3) =
+    (this * other.toVec4()).toVec3()
+
+  operator fun times(other: Vec3i) =
+    (this * other.toVec3())
 
   companion object {
     @JvmStatic
@@ -59,6 +84,8 @@ data class Mat4(
     )
 
     fun translate(xyz: Vec3) = translate(xyz.x, xyz.y, xyz.z)
+
+    fun translate(xyz: Vec3i) = translate(xyz.toVec3())
 
     fun scale(x: Float, y: Float, z: Float) = Mat4(
       x, 0f, 0f, 0f,
@@ -142,12 +169,13 @@ data class Mat4(
   }
 }
 
-operator fun Mat4.plus(other: Mat4) = Mat4(
-  c00 + other.c00, c01 + other.c01, c02 + other.c02, c03 + other.c03,
-  c10 + other.c10, c11 + other.c11, c12 + other.c12, c13 + other.c13,
-  c20 + other.c20, c21 + other.c21, c22 + other.c22, c23 + other.c23,
-  c30 + other.c30, c31 + other.c31, c32 + other.c32, c33 + other.c33
-)
+operator fun Mat4.plus(other: Mat4) = plus(other)
+
+operator fun Mat4.times(other: Mat4) = times(other)
+
+operator fun Mat4.times(other: Vec4) = times(other)
+
+operator fun Mat4.times(other: Vec3) = times(other)
 
 operator fun Float.times(other: Mat4) = Mat4(
   this * other.c00, this * other.c01, this * other.c02, this * other.c03,
@@ -156,133 +184,120 @@ operator fun Float.times(other: Mat4) = Mat4(
   this * other.c30, this * other.c31, this * other.c32, this * other.c33
 )
 
-operator fun Mat4.times(other: Mat4) = Mat4(
-  r0 dotProduct other.c0, r0 dotProduct other.c1, r0 dotProduct other.c2, r0 dotProduct other.c3,
-  r1 dotProduct other.c0, r1 dotProduct other.c1, r1 dotProduct other.c2, r1 dotProduct other.c3,
-  r2 dotProduct other.c0, r2 dotProduct other.c1, r2 dotProduct other.c2, r2 dotProduct other.c3,
-  r3 dotProduct other.c0, r3 dotProduct other.c1, r3 dotProduct other.c2, r3 dotProduct other.c3
-)
-
-operator fun Mat4.times(other: Vec4) =
-  Vec4(r0 dotProduct other, r1 dotProduct other, r2 dotProduct other, r3 dotProduct other)
-
-operator fun Mat4.times(other: Vec3) =
-  (this * other.toVec4()).toVec3()
-
 private fun invert(m: List<Float>): Mat4? {
   val inv = FloatArray(16)
 
   inv[0] = m[5] * m[10] * m[15] -
-           m[5] * m[11] * m[14] -
-           m[9] * m[6] * m[15] +
-           m[9] * m[7] * m[14] +
-           m[13] * m[6] * m[11] -
-           m[13] * m[7] * m[10]
+    m[5] * m[11] * m[14] -
+    m[9] * m[6] * m[15] +
+    m[9] * m[7] * m[14] +
+    m[13] * m[6] * m[11] -
+    m[13] * m[7] * m[10]
 
   inv[4] = -m[4] * m[10] * m[15] +
-           m[4] * m[11] * m[14] +
-           m[8] * m[6] * m[15] -
-           m[8] * m[7] * m[14] -
-           m[12] * m[6] * m[11] +
-           m[12] * m[7] * m[10]
+    m[4] * m[11] * m[14] +
+    m[8] * m[6] * m[15] -
+    m[8] * m[7] * m[14] -
+    m[12] * m[6] * m[11] +
+    m[12] * m[7] * m[10]
 
   inv[8] = m[4] * m[9] * m[15] -
-           m[4] * m[11] * m[13] -
-           m[8] * m[5] * m[15] +
-           m[8] * m[7] * m[13] +
-           m[12] * m[5] * m[11] -
-           m[12] * m[7] * m[9]
+    m[4] * m[11] * m[13] -
+    m[8] * m[5] * m[15] +
+    m[8] * m[7] * m[13] +
+    m[12] * m[5] * m[11] -
+    m[12] * m[7] * m[9]
 
   inv[12] = -m[4] * m[9] * m[14] +
-            m[4] * m[10] * m[13] +
-            m[8] * m[5] * m[14] -
-            m[8] * m[6] * m[13] -
-            m[12] * m[5] * m[10] +
-            m[12] * m[6] * m[9]
+    m[4] * m[10] * m[13] +
+    m[8] * m[5] * m[14] -
+    m[8] * m[6] * m[13] -
+    m[12] * m[5] * m[10] +
+    m[12] * m[6] * m[9]
 
   inv[1] = -m[1] * m[10] * m[15] +
-           m[1] * m[11] * m[14] +
-           m[9] * m[2] * m[15] -
-           m[9] * m[3] * m[14] -
-           m[13] * m[2] * m[11] +
-           m[13] * m[3] * m[10]
+    m[1] * m[11] * m[14] +
+    m[9] * m[2] * m[15] -
+    m[9] * m[3] * m[14] -
+    m[13] * m[2] * m[11] +
+    m[13] * m[3] * m[10]
 
   inv[5] = m[0] * m[10] * m[15] -
-           m[0] * m[11] * m[14] -
-           m[8] * m[2] * m[15] +
-           m[8] * m[3] * m[14] +
-           m[12] * m[2] * m[11] -
-           m[12] * m[3] * m[10]
+    m[0] * m[11] * m[14] -
+    m[8] * m[2] * m[15] +
+    m[8] * m[3] * m[14] +
+    m[12] * m[2] * m[11] -
+    m[12] * m[3] * m[10]
 
   inv[9] = -m[0] * m[9] * m[15] +
-           m[0] * m[11] * m[13] +
-           m[8] * m[1] * m[15] -
-           m[8] * m[3] * m[13] -
-           m[12] * m[1] * m[11] +
-           m[12] * m[3] * m[9]
+    m[0] * m[11] * m[13] +
+    m[8] * m[1] * m[15] -
+    m[8] * m[3] * m[13] -
+    m[12] * m[1] * m[11] +
+    m[12] * m[3] * m[9]
 
   inv[13] = m[0] * m[9] * m[14] -
-            m[0] * m[10] * m[13] -
-            m[8] * m[1] * m[14] +
-            m[8] * m[2] * m[13] +
-            m[12] * m[1] * m[10] -
-            m[12] * m[2] * m[9]
+    m[0] * m[10] * m[13] -
+    m[8] * m[1] * m[14] +
+    m[8] * m[2] * m[13] +
+    m[12] * m[1] * m[10] -
+    m[12] * m[2] * m[9]
 
   inv[2] = m[1] * m[6] * m[15] -
-           m[1] * m[7] * m[14] -
-           m[5] * m[2] * m[15] +
-           m[5] * m[3] * m[14] +
-           m[13] * m[2] * m[7] -
-           m[13] * m[3] * m[6]
+    m[1] * m[7] * m[14] -
+    m[5] * m[2] * m[15] +
+    m[5] * m[3] * m[14] +
+    m[13] * m[2] * m[7] -
+    m[13] * m[3] * m[6]
 
   inv[6] = -m[0] * m[6] * m[15] +
-           m[0] * m[7] * m[14] +
-           m[4] * m[2] * m[15] -
-           m[4] * m[3] * m[14] -
-           m[12] * m[2] * m[7] +
-           m[12] * m[3] * m[6]
+    m[0] * m[7] * m[14] +
+    m[4] * m[2] * m[15] -
+    m[4] * m[3] * m[14] -
+    m[12] * m[2] * m[7] +
+    m[12] * m[3] * m[6]
 
   inv[10] = m[0] * m[5] * m[15] -
-            m[0] * m[7] * m[13] -
-            m[4] * m[1] * m[15] +
-            m[4] * m[3] * m[13] +
-            m[12] * m[1] * m[7] -
-            m[12] * m[3] * m[5]
+    m[0] * m[7] * m[13] -
+    m[4] * m[1] * m[15] +
+    m[4] * m[3] * m[13] +
+    m[12] * m[1] * m[7] -
+    m[12] * m[3] * m[5]
 
   inv[14] = -m[0] * m[5] * m[14] +
-            m[0] * m[6] * m[13] +
-            m[4] * m[1] * m[14] -
-            m[4] * m[2] * m[13] -
-            m[12] * m[1] * m[6] +
-            m[12] * m[2] * m[5]
+    m[0] * m[6] * m[13] +
+    m[4] * m[1] * m[14] -
+    m[4] * m[2] * m[13] -
+    m[12] * m[1] * m[6] +
+    m[12] * m[2] * m[5]
 
   inv[3] = -m[1] * m[6] * m[11] +
-           m[1] * m[7] * m[10] +
-           m[5] * m[2] * m[11] -
-           m[5] * m[3] * m[10] -
-           m[9] * m[2] * m[7] +
-           m[9] * m[3] * m[6]
+    m[1] * m[7] * m[10] +
+    m[5] * m[2] * m[11] -
+    m[5] * m[3] * m[10] -
+    m[9] * m[2] * m[7] +
+    m[9] * m[3] * m[6]
 
   inv[7] = m[0] * m[6] * m[11] -
-           m[0] * m[7] * m[10] -
-           m[4] * m[2] * m[11] +
-           m[4] * m[3] * m[10] +
-           m[8] * m[2] * m[7] -
-           m[8] * m[3] * m[6]
+    m[0] * m[7] * m[10] -
+    m[4] * m[2] * m[11] +
+    m[4] * m[3] * m[10] +
+    m[8] * m[2] * m[7] -
+    m[8] * m[3] * m[6]
 
   inv[11] = -m[0] * m[5] * m[11] +
-            m[0] * m[7] * m[9] +
-            m[4] * m[1] * m[11] -
-            m[4] * m[3] * m[9] -
-            m[8] * m[1] * m[7] +
-            m[8] * m[3] * m[5]
+    m[0] * m[7] * m[9] +
+    m[4] * m[1] * m[11] -
+    m[4] * m[3] * m[9] -
+    m[8] * m[1] * m[7] +
+    m[8] * m[3] * m[5]
 
   inv[15] = m[0] * m[5] * m[10] -
-            m[0] * m[6] * m[9] -
-            m[4] * m[1] * m[10] +
-            m[4] * m[2] * m[9] +
-            m[8] * m[1] * m[6] -
-            m[8] * m[2] * m[5]
+    m[0] * m[6] * m[9] -
+    m[4] * m[1] * m[10] +
+    m[4] * m[2] * m[9] +
+    m[8] * m[1] * m[6] -
+    m[8] * m[2] * m[5]
 
   val det =
     (m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12])
