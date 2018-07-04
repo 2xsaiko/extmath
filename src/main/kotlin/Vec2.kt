@@ -9,6 +9,11 @@ data class Vec2(val x: Float, val y: Float) {
   operator fun div(other: Vec2) = Vec2(x / other.x, y / other.y)
   operator fun times(other: Vec2) = Vec2(x * other.x, y * other.y)
 
+  operator fun plus(other: Vec2i) = Vec2(x + other.x, y + other.y)
+  operator fun minus(other: Vec2i) = Vec2(x - other.x, y - other.y)
+  operator fun div(other: Vec2i) = Vec2(x / other.x, y / other.y)
+  operator fun times(other: Vec2i) = Vec2(x * other.x, y * other.y)
+
   operator fun div(other: Float) = Vec2(x / other, y / other)
   operator fun times(other: Float) = Vec2(x * other, y * other)
 

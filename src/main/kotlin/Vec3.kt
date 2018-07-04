@@ -9,6 +9,11 @@ data class Vec3(val x: Float, val y: Float, val z: Float) {
   operator fun div(other: Vec3) = Vec3(x / other.x, y / other.y, z / other.z)
   operator fun times(other: Vec3) = Vec3(x * other.x, y * other.y, z * other.z)
 
+  operator fun plus(other: Vec3i) = Vec3(x + other.x, y + other.y, z + other.z)
+  operator fun minus(other: Vec3i) = Vec3(x - other.x, y - other.y, z - other.z)
+  operator fun div(other: Vec3i) = Vec3(x / other.x, y / other.y, z / other.z)
+  operator fun times(other: Vec3i) = Vec3(x * other.x, y * other.y, z * other.z)
+
   operator fun div(other: Float) = Vec3(x / other, y / other, z / other)
   operator fun times(other: Float) = Vec3(x * other, y * other, z * other)
 
